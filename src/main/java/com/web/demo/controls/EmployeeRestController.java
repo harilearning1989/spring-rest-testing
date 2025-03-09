@@ -18,7 +18,6 @@ public class EmployeeRestController {
 
     private final EmployeeService employeeService;
 
-    // ✅ Constructor injection (Best practice)
     public EmployeeRestController(EmployeeService employeeService) {
         this.employeeService = employeeService;
     }
@@ -40,6 +39,11 @@ public class EmployeeRestController {
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/top1000")
+    public ResponseEntity<List<Employee>> getTop1000Employees() {
+        return ResponseEntity.ok(employeeService.getTop1000Employees());
     }
 
     @GetMapping("/manager/{managerId}")

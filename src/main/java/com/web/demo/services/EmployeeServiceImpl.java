@@ -8,6 +8,8 @@ import com.web.demo.exceptions.EmployeeNotFoundException;
 import com.web.demo.models.Employee;
 import com.web.demo.repos.EmployeeRepo;
 import lombok.Setter;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,6 +31,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<Employee> findAll() {
         return employeeRepo.findAll();
+    }
+
+    @Override
+    public List<Employee> getTop1000Employees() {
+        Pageable pageable = PageRequest.of(0, 1000);  // Page 0, size 1000
+        return employeeRepo.findAll(pageable).getContent();
+    }
+
+    public List<Employee> getTop1000EmployeesTmp() {
+        return employeeRepo.findTop1000Employees();
     }
 
     @Override

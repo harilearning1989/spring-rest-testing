@@ -9,6 +9,8 @@ import java.util.Optional;
 public interface EmployeeService {
     List<Employee> findAll();
 
+    List<Employee> getTop1000Employees();
+
     Optional<Employee> findByEmpId(int empId);
 
     Employee createEmployee(Employee employee);
