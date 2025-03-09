@@ -39,7 +39,8 @@ public class EmployeeRestController {
     }
 
     @GetMapping("/manager/{managerId}")
-    public ResponseEntity<List<EmployeeDTO>> findAllUnderManager(@PathVariable("managerId") int managerId) {
+    public ResponseEntity<List<EmployeeDTO>> findAllUnderManager(
+            @PathVariable("managerId") int managerId) {
         try {
             List<EmployeeDTO> empList = employeeService.findAllUnderManager(managerId);
             if (empList.isEmpty()) {
@@ -53,13 +54,18 @@ public class EmployeeRestController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getEmpById(@PathVariable("id") int empId) {
-        Optional<Employee> empData = employeeService.findAllByEmpId(empId);
+        Optional<Employee> empData = employeeService.findByEmpId(empId);
 
         if (empData.isPresent()) {
             return new ResponseEntity<>(empData.get(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+    }
+
+    @GetMapping("findById/{empId}")
+    public Employee getEmployeeById(@PathVariable("empId") int empId) {
+        return employeeService.getEmployeeById(empId);
     }
 
     @PostMapping("/create")

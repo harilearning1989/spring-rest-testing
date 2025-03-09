@@ -9,11 +9,13 @@ import java.util.Optional;
 public interface EmployeeService {
     List<Employee> findAll();
 
-    Optional<Employee> findAllByEmpId(int empId);
+    Optional<Employee> findByEmpId(int empId);
 
     Employee createEmployee(Employee employee);
 
     Optional<Employee> findById(int empId);
+
+    Employee getEmployeeById(int empId);
 
     void deleteById(int empId);
 

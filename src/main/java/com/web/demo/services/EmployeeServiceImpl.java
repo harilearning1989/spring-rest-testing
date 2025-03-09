@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.web.demo.dtos.EmployeeDTO;
+import com.web.demo.exceptions.EmployeeNotFoundException;
 import com.web.demo.models.Employee;
 import com.web.demo.repos.EmployeeRepo;
-import com.web.demo.utils.EmployeeUtils;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,8 +27,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Optional<Employee> findAllByEmpId(int empId) {
+    public Optional<Employee> findByEmpId(int empId) {
         return employeeRepo.findAllByEmpId(empId);
+    }
+
+    @Override
+    public Employee getEmployeeById(int empId) {
+        return employeeRepo.findByEmpId(empId)
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + empId));
     }
 
     @Override
@@ -83,7 +89,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                         dto.setSalary(salary);
                     }
                     return dto;
-                }).collect(Collectors.toList());
+                }).toList();
     }
 
     @Override
@@ -132,7 +138,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .collect(Collectors.toList());
     }
 
-    public EmployeeDTO fetchEmployee(final Employee employee) {
+    /*public EmployeeDTO fetchEmployee(final Employee employee) {
         final EmployeeDTO employeeDto = new EmployeeDTO();
         employeeDto.setEmpName(employee.getEmpName());
         employeeDto.setFatherName(employee.getFatherName());
@@ -146,11 +152,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeDto.setFatherName(employee.getFatherName());
         employeeDto.setDesignation(EmployeeUtils.getInitials(employee.getEmpName(), employee.getFatherName()));
         return employeeDto;
-    }
+    }*/
 
-    private String getEmployeeInitials(final String fName, final String lName) {
+   /* private String getEmployeeInitials(final String fName, final String lName) {
         return fName + lName;
-    }
+    }*/
 
     private int getRandomNumber(int min, int max) {
         Random r = new Random();
@@ -198,11 +204,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
 
-    public String getDetails() {
+  /*  public String getDetails() {
         return "Mock private method example: " + iAmPrivate();
-    }
+    }*/
 
-    private String iAmPrivate() {
+    /*private String iAmPrivate() {
         return new Date().toString();
-    }
+    }*/
 }
