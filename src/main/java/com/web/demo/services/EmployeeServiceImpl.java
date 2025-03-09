@@ -8,18 +8,23 @@ import com.web.demo.exceptions.EmployeeNotFoundException;
 import com.web.demo.models.Employee;
 import com.web.demo.repos.EmployeeRepo;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Setter
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
-    @Autowired
-    private EmployeeRepo employeeRepo;
+    private final EmployeeRepo employeeRepo;
+
+    public EmployeeServiceImpl(EmployeeRepo employeeRepo) {
+        this.employeeRepo = employeeRepo;
+    }
 
     @Override
     public List<Employee> findAll() {

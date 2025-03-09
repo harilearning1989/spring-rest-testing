@@ -16,10 +16,14 @@ import java.util.Optional;
 @RequestMapping("/emp")
 public class EmployeeRestController {
 
-    @Autowired
-    private EmployeeService employeeService;
+    private final EmployeeService employeeService;
 
-    @GetMapping("/helloworld")
+    // ✅ Constructor injection (Best practice)
+    public EmployeeRestController(EmployeeService employeeService) {
+        this.employeeService = employeeService;
+    }
+
+    @GetMapping("/helloWorld")
     public ResponseEntity<String> helloWorld() {
         String message = employeeService.helloWorld();
         return new ResponseEntity<>(message, HttpStatus.OK);
@@ -80,7 +84,7 @@ public class EmployeeRestController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Employee> updateEmployee(
-            @PathVariable("id") int empId, @RequestBody(required = false) Employee employee) {
+            @PathVariable("id") int empId) {
         Optional<Employee> empData = employeeService.findById(empId);
         if (empData.isPresent()) {
             Employee _employee = empData.get();
