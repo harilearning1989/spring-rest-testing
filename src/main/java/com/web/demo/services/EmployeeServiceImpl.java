@@ -12,10 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Setter
@@ -36,7 +33,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<Employee> getTop1000Employees() {
         Pageable pageable = PageRequest.of(0, 1000);  // Page 0, size 1000
-        return employeeRepo.findAll(pageable).getContent();
+        List<Employee> employeeList = employeeRepo.findAll(pageable).getContent();
+        employeeList = filterEmployees(employeeList);
+        return employeeList;
+    }
+
+    private List<Employee> filterEmployees(List<Employee> employeeList) {
+        return Optional.ofNullable(employeeList)
+                .orElse(Collections.emptyList())
+                .stream()
+                .filter(f -> f.getSalary() > 40000)
+                .toList();
     }
 
     public List<Employee> getTop1000EmployeesTmp() {
@@ -56,6 +63,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Employee createEmployee(Employee employee) {
+        validateEmployee(employee); // Private method call
         return employeeRepo.save(employee);
     }
 
@@ -220,6 +228,11 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .collect(Collectors.toList());
     }
 
+    private void validateEmployee(Employee employee) {
+        if (employee.getEmpName() == null || employee.getEmpName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Employee name cannot be empty");
+        }
+    }
 
   /*  public String getDetails() {
         return "Mock private method example: " + iAmPrivate();

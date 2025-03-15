@@ -4,13 +4,21 @@ import com.web.demo.dtos.EmployeeDTO;
 import com.web.demo.exceptions.EmployeeNotFoundException;
 import com.web.demo.models.Employee;
 import com.web.demo.repos.EmployeeRepo;
+import com.web.demo.utils.EmployeeUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,6 +35,8 @@ class EmployeeServiceImplTest {
 
     private Employee employee;
 
+    private List<Employee> mockEmployees;
+
     @BeforeEach
     void setUp() {
         employee = new Employee();
@@ -34,6 +44,18 @@ class EmployeeServiceImplTest {
         employee.setEmpId(101);
         employee.setEmpName("Hari Duddukunta");
         employee.setDesignation("Software Engineer");
+
+        // Creating a mock list of employees
+        mockEmployees = new ArrayList<>();
+        for (int i = 1; i <= 1000; i++) {
+            Employee emp = new Employee();
+            emp.setId(i);
+            emp.setEmpId(100+i);
+            emp.setEmpName("Hari "+i);
+            emp.setDesignation("Software Engineer "+i);
+            emp.setSalary(39500+i);
+            mockEmployees.add(emp);
+        }
     }
 
 
@@ -149,6 +171,84 @@ class EmployeeServiceImplTest {
                 () -> employeeService.getEmployeeById(empId));
         assertEquals("Employee not found with id: " + empId, exception.getMessage());
         verify(employeeRepo, times(1)).findByEmpId(empId);
+    }
+
+    @Test
+    void testGetTop1000Employees() {
+        // Mocking repository call
+        Pageable pageable = PageRequest.of(0, 1000);
+        Page<Employee> mockPage = new PageImpl<>(mockEmployees);
+        when(employeeRepo.findAll(pageable)).thenReturn(mockPage);
+        // Calling the service method
+        List<Employee> result = employeeService.getTop1000Employees();
+        // Assertions
+        assertNotNull(result);
+        assertEquals(500, result.size());
+        verify(employeeRepo, times(1)).findAll(pageable);
+    }
+
+    @Test
+    void testSaveEmployee_InvalidName() {
+        Employee invalidEmployee = new Employee();
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            employeeService.createEmployee(invalidEmployee);
+        });
+
+        assertEquals("Employee name cannot be empty", exception.getMessage());
+        verify(employeeRepo, never()).save(any());
+    }
+
+
+    @Test
+    void testValidateEmployee_UsingReflection() throws Exception {
+        EmployeeServiceImpl service = new EmployeeServiceImpl(employeeRepo);
+        Method method = EmployeeServiceImpl.class.getDeclaredMethod("validateEmployee", Employee.class);
+        method.setAccessible(true);
+
+        Employee validEmployee = new Employee();
+        validEmployee.setEmpName("Hari");
+
+        assertDoesNotThrow(() -> method.invoke(service, validEmployee));
+
+        Employee invalidEmployee = new Employee();
+        Exception exception = assertThrows(Exception.class, () -> method.invoke(service, invalidEmployee));
+
+        assertInstanceOf(IllegalArgumentException.class, exception.getCause());
+        assertEquals("Employee name cannot be empty", exception.getCause().getMessage());
+    }
+
+    @Test
+    void testSaveEmployee_InvalidName_ShouldThrowException() {
+        // Given an invalid employee with an empty name
+        Employee invalidEmployee = new Employee();
+        // When & Then: Expect IllegalArgumentException
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            employeeService.createEmployee(invalidEmployee);
+        });
+        // Assert the exception message
+        assertEquals("Employee name cannot be empty", exception.getMessage());
+        // Verify that save() was never called due to validation failure
+        verify(employeeRepo, never()).save(any());
+    }
+
+    @Test
+    void testGetEmployeeLevel() {
+        assertEquals("Senior", EmployeeUtils.getEmployeeLevel(5));
+        assertEquals("Junior", EmployeeUtils.getEmployeeLevel(3));
+    }
+
+    @Test
+    void testCalculateTax_Mocked() {
+        try (MockedStatic<EmployeeUtils> mockedStatic = Mockito.mockStatic(EmployeeUtils.class)) {
+            mockedStatic.when(() -> EmployeeUtils.calculateTax(50000)).thenReturn(10000.0);
+
+            double tax = EmployeeUtils.calculateTax(50000);
+            assertEquals(10000.0, tax);
+
+            // Verify static method call
+            mockedStatic.verify(() -> EmployeeUtils.calculateTax(50000), times(1));
+        }
     }
 
     private List<Employee> getMockEmployees() {
